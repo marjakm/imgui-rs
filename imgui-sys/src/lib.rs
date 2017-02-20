@@ -3,6 +3,10 @@
 #[macro_use]
 extern crate bitflags;
 
+#[cfg(feature = "gfx")]
+#[macro_use]
+extern crate gfx;
+
 #[cfg(feature = "glium")]
 #[macro_use]
 extern crate glium;
@@ -11,6 +15,9 @@ use std::convert::From;
 use std::mem;
 use std::os::raw::{c_char, c_float, c_int, c_short, c_uchar, c_uint, c_ushort, c_void};
 use std::slice;
+
+#[cfg(feature = "gfx")]
+mod gfx_support;
 
 #[cfg(feature = "glium")]
 mod glium_support;
