@@ -122,19 +122,6 @@ pub enum ImGuiKey {
 }
 pub const ImGuiKey_COUNT: usize = 19;
 
-bitflags!(
-    /// Alignment
-    #[repr(C)]
-    pub flags ImGuiAlign: c_int {
-        const ImGuiAlign_Left    = 1 << 0,
-        const ImGuiAlign_Center  = 1 << 1,
-        const ImGuiAlign_Right   = 1 << 2,
-        const ImGuiAlign_Top     = 1 << 3,
-        const ImGuiAlign_VCenter = 1 << 4,
-        const ImGuiAlign_Default = ImGuiAlign_Left.bits | ImGuiAlign_Top.bits
-    }
-);
-
 /// Color edit mode
 #[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -150,7 +137,8 @@ pub enum ImGuiColorEditMode {
 #[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum ImGuiMouseCursor {
-    Arrow,
+    None = -1,
+    Arrow = 0,
     TextInput,
     Move,
     ResizeNS,
@@ -360,7 +348,7 @@ pub struct ImGuiStyle {
     /// Radius of window corners rounding. Set to 0.0f to have rectangular windows
     pub window_rounding: c_float,
     /// Alignment for title bar text
-    pub window_title_align: ImGuiAlign,
+    pub window_title_align: ImVec2,
     /// Radius of child window corners rounding. Set to 0.0f to have rectangular child windows
     pub child_window_rounding: c_float,
     /// Padding within a framed rectangle (used by most widgets)
@@ -390,6 +378,8 @@ pub struct ImGuiStyle {
     pub grab_min_size: c_float,
     /// Radius of grabs corners rounding. Set to 0.0f to have rectangular slider grabs.
     pub grab_rounding: c_float,
+    /// Alignment of button text when button is larger than text. Defaults to (0.5f,0.5f) for horizontally+vertically centered.
+    pub button_text_align: ImVec2,
     /// Window positions are clamped to be visible within the display area by at least this
     /// amount. Only covers regular windows.
     pub display_window_padding: ImVec2,
@@ -426,18 +416,16 @@ pub struct ImGuiIO {
     pub fonts: *mut ImFontAtlas,
     pub font_global_scale: c_float,
     pub font_allow_user_scaling: bool,
+    pub font_default: *mut ImFont,
     pub display_framebuffer_scale: ImVec2,
     pub display_visible_min: ImVec2,
     pub display_visible_max: ImVec2,
-
-    pub word_movement_uses_alt_key: bool,
-    pub shortcuts_use_super_key: bool,
-    pub double_click_selects_word: bool,
-    pub multi_select_uses_super_key: bool,
+    pub osx_behaviors: bool,
 
     pub render_draw_lists_fn: Option<extern "C" fn(data: *mut ImDrawData)>,
-    pub get_clipboard_text_fn: Option<extern "C" fn() -> *const c_char>,
-    pub set_clipboard_text_fn: Option<extern "C" fn(text: *const c_char)>,
+    pub get_clipboard_text_fn: Option<extern "C" fn(user_data: *mut c_void) -> *const c_char>,
+    pub set_clipboard_text_fn: Option<extern "C" fn(user_data: *mut c_void, text: *const c_char)>,
+    pub clipboard_user_data: *mut c_void,
     pub mem_alloc_fn: Option<extern "C" fn(sz: usize) -> *mut c_void>,
     pub mem_free_fn: Option<extern "C" fn(ptr: *mut c_void)>,
     pub ime_set_input_screen_pos_fn: Option<extern "C" fn(x: c_int, y: c_int)>,
@@ -463,9 +451,9 @@ pub struct ImGuiIO {
     pub metrics_render_vertices: c_int,
     pub metrics_render_indices: c_int,
     pub metrics_active_windows: c_int,
+    pub mouse_delta: ImVec2,
 
     pub mouse_pos_prev: ImVec2,
-    pub mouse_delta: ImVec2,
     pub mouse_clicked: [bool; 5],
     pub mouse_clicked_pos: [ImVec2; 5],
     pub mouse_clicked_time: [c_float; 5],
@@ -689,7 +677,7 @@ pub struct ImFont {
     display_offset: ImVec2,
     glyphs: ImVector<Glyph>,
     index_x_advance: ImVector<c_float>,
-    index_lookup: ImVector<c_short>,
+    index_lookup: ImVector<c_ushort>,
     fallback_glyph: *const Glyph,
     fallback_x_advance: c_float,
     fallback_char: ImWchar,
