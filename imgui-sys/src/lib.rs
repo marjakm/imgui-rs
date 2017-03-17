@@ -565,7 +565,7 @@ pub struct ImDrawCmd {
 }
 
 /// Vertex index
-pub type ImDrawIdx = c_ushort;
+pub type ImDrawIdx = c_uint;
 
 /// A single vertex
 #[repr(C)]
