@@ -400,6 +400,22 @@ impl<'ui> Ui<'ui> {
 
 // Layout
 impl<'ui> Ui<'ui> {
+    /// Pushes a value to the item width stack.
+    pub fn push_item_width(&self, width: f32) { unsafe { imgui_sys::igPushItemWidth(width) } }
+
+    /// Pops a value from the item width stack.
+    ///
+    /// # Aborts
+    /// The current process is aborted if the item width stack is empty.
+    pub fn pop_item_width(&self) { unsafe { imgui_sys::igPopItemWidth() } }
+
+    /// Runs a function after temporarily pushing a value to the item width stack.
+    pub fn with_item_width<F>(&self, width: f32, f: F) where F: FnOnce() {
+        self.push_item_width(width);
+        f();
+        self.pop_item_width();
+    }
+
     pub fn separator(&self) { unsafe { imgui_sys::igSeparator() }; }
     pub fn same_line(&self, pos_x: f32) { unsafe { imgui_sys::igSameLine(pos_x, -1.0f32) } }
     pub fn same_line_spacing(&self, pos_x: f32, spacing_w: f32) {
@@ -428,6 +444,29 @@ impl<'ui> Ui<'ui> {
     }
 
     pub fn get_columns_count(&self) -> i32 { unsafe { imgui_sys::igGetColumnsCount() } }
+}
+
+// ID scopes
+impl<'ui> Ui<'ui> {
+    /// Pushes an identifier to the ID stack.
+    pub fn push_id(&self, id: i32) {
+        unsafe { imgui_sys::igPushIdInt(id) };
+    }
+
+    /// Pops an identifier from the ID stack.
+    ///
+    /// # Aborts
+    /// The current process is aborted if the ID stack is empty.
+    pub fn pop_id(&self) {
+        unsafe { imgui_sys::igPopId() };
+    }
+
+    /// Runs a function after temporarily pushing a value to the ID stack.
+    pub fn with_id<F>(&self, id: i32, f: F) where F: FnOnce() {
+        self.push_id(id);
+        f();
+        self.pop_id();
+    }
 }
 
 // Widgets
