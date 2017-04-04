@@ -35,7 +35,7 @@ pub use imgui_sys::{ImDrawIdx, ImDrawVert, ImGuiInputTextFlags, ImGuiInputTextFl
                     ImGuiWindowFlags_NoInputs, ImGuiWindowFlags_NoMove, ImGuiWindowFlags_NoResize,
                     ImGuiWindowFlags_NoSavedSettings, ImGuiWindowFlags_NoScrollWithMouse,
                     ImGuiWindowFlags_NoScrollbar, ImGuiWindowFlags_NoTitleBar,
-                    ImGuiWindowFlags_ShowBorders, ImVec2, ImVec4};
+                    ImGuiWindowFlags_ShowBorders, ImVec2, ImVec4, ImGuiCol};
 pub use input::{ColorEdit3, ColorEdit4, InputFloat, InputFloat2, InputFloat3, InputFloat4, InputInt,
                 InputInt2, InputInt3, InputInt4, InputText};
 pub use menus::{Menu, MenuItem};
@@ -444,6 +444,23 @@ impl<'ui> Ui<'ui> {
     }
 
     pub fn get_columns_count(&self) -> i32 { unsafe { imgui_sys::igGetColumnsCount() } }
+}
+
+// Color changes
+impl<'ui> Ui<'ui> {
+    pub fn push_style_color(&self, idx: ImGuiCol, col: ImVec4) {
+        unsafe { imgui_sys::igPushStyleColor(idx, col) };
+    }
+
+    pub fn pop_style_color(&self, count: i32) {
+        unsafe { imgui_sys::igPopStyleColor(count) };
+    }
+
+    pub fn with_style_color<F>(&self, idx: ImGuiCol, col: ImVec4, f: F) where F: FnOnce() {
+        self.push_style_color(idx, col);
+        f();
+        self.pop_style_color(1);
+    }
 }
 
 // ID scopes
