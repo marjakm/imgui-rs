@@ -88,7 +88,7 @@ impl Shaders {
 
 pub struct Renderer<R: Resources> {
     bundle: Bundle<R, pipe::Data<R>>,
-    index_buffer: Buffer<R, u16>,
+    index_buffer: Buffer<R, u32>,
 }
 
 impl<R: Resources> Renderer<R> {
